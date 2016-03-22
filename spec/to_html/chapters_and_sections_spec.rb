@@ -123,6 +123,28 @@ describe 'Polytexnic::Pipeline#to_html' do
     it { should resemble output }
   end
 
+  describe '\subsubsection comment par' do
+    let(:polytex) do <<-'EOS'
+        Lorem ipsum
+        \subsubsection{Foo}
+        \label{subsubsec:foo}
+        % a comment line to be ignored
+        % more comments
+        %
+        The first paragraph in Foo
+      EOS
+    end
+    let(:output) do <<-'EOS'
+      <p>Lorem ipsum</p>
+      <div id="subsubsec-foo" data-tralics-id="uid1" class="subsubsection" data-number="1">
+        <h4><a href="#subsubsec-foo" class="heading">Foo</a></h4>
+      <p>The first paragraph in Foo
+      </p></div>
+      EOS
+    end
+    it { should resemble output }
+  end
+
   describe '\subsection' do
     let(:polytex) do <<-'EOS'
         \section{Foo}
