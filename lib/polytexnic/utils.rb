@@ -137,6 +137,37 @@ module Polytexnic
 \newcommand{\includepdf}[1]{}
 \newcommand{\newunicodechar}[2]{}
 \newcommand{\extrafloats}[1]{}
+% Minireference custom commands for exercises and problems (see 00.exercises_problems.hdr.tex).
+\newenvironment{problems}[1]{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-problems}}{\end{xmlelement}}
+\newenvironment{problem}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-problem}}{\end{xmlelement}}
+\newenvironment{answer}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-answer}}{\end{xmlelement}}
+\newenvironment{solution}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-solution}}{\end{xmlelement}}
+\newcommand{\beforeFirstExercises}[1]{}
+\newcommand{\afterLastExercises}[1]{}
+\newenvironment{exercises}[1]{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-exercises}}{\end{xmlelement}}
+\newenvironment{exercise}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-exercise}}{\end{xmlelement}}
+\newenvironment{eanswer}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-eanswer}}{\end{xmlelement}}
+\newenvironment{esolution}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-esolution}}{\end{xmlelement}}
+\newenvironment{hint}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-hint}}{\end{xmlelement}}
+\newenvironment{exparts*}{\begin{enumerate}\AddAttToCurrent{class}{exparts-star}}{\end{enumerate}}
+\newenvironment{exparts}{\begin{enumerate}\AddAttToCurrent{class}{exparts}}{\end{enumerate}}
+\newenvironment{ansparts*}{\begin{enumerate}\AddAttToCurrent{class}{ansparts-star}}{\end{enumerate}}
+\newenvironment{ansparts}{\begin{enumerate}\AddAttToCurrent{class}{ansparts}}{\end{enumerate}}
+\newcommand{\partsitem}{\item}
+\newcommand{\exeref}[1]{E\ref{#1}}
+\newcommand{\probref}[1]{P\ref{#1}}
+\newcommand{\twocol}{\begin{xmlelement}{div}\AddAttToCurrent{class}{multicols}}
+\newcommand{\endtwocol}{\end{xmlelement}}
+\newcommand{\threecol}{\begin{xmlelement}{div}\AddAttToCurrent{class}{multicols}}
+\newcommand{\endthreecol}{\end{xmlelement}}
+\newcommand{\fourcol}{\begin{xmlelement}{div}\AddAttToCurrent{class}{multicols}}
+\newcommand{\endfourcol}{\end{xmlelement}}
+\newcommand{\fivecol}{\begin{xmlelement}{div}\AddAttToCurrent{class}{multicols}}
+\newcommand{\endfivecol}{\end{xmlelement}}
+\newenvironment{EAnswer}[1]{\textbf{E#1}}{}
+\newenvironment{ESolution}[1]{\par\textbf{E#1}}{}
+\newenvironment{Answer}[1]{\textbf{P#1}}{}
+\newenvironment{Solution}[1]{\par\textbf{P#1}}{}
       EOS
       custom_commands = <<-EOS
 \\usepackage{amsthm}

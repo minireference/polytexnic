@@ -45,6 +45,7 @@ module Polytexnic
         restore_inline_verbatim(doc)
         codelistings(doc)
         asides(doc)
+        remove_answers_and_solutions(doc)
         make_cross_references(doc)
         hrefs(doc)
         graphics_and_figures(doc)
@@ -560,8 +561,22 @@ module Polytexnic
           end
         end
 
+        def remove_answers_and_solutions(doc)
+          %w[miniref-answer miniref-solution miniref-eanswer miniref-esolution].each do |cls|
+            doc.xpath("//div[contains(@class,'#{cls}')]").map(&:remove)
+          end
+        end
+
         # Set the Tralics ids.
         def set_ids(doc)
+          # Manually set Tralics ids for \section* and \subsection* environments
+          doc.xpath('//div0[@rend="nonumber"]').each do |node|
+            if label = node.at_css('data-label')
+               node['data-tralics-id'] = label.inner_html
+               label.remove
+            end
+          end
+          # All elements that have ids (div0, div1, div2, etc)
           doc.xpath('//*[@id]').each do |node|
             # TODO: make whitelist of non-tralics id's
             next if node['id'] =~ /footnote/
@@ -604,6 +619,21 @@ module Polytexnic
             if label = node.at_css('data-label')
               node.at_css('texmath')['id'] = pipeline_label(label)
               label.remove
+            end
+          end
+          # set data-tralics-id on exercise and problem nodes
+          doc.xpath('//div[@class="miniref-exercise"]|//div[@class="miniref-problem"]').each do |node|
+            if unexpected = node.at_css('unexpected')
+              label = node.at_css('data-label')
+              node['id'] = pipeline_label(label)
+              node['data-tralics-id'] = node['id']
+              unexpected.remove
+              clean_node node, %w{data-label}
+            elsif label = node.at_css('data-label')
+              node['id'] = pipeline_label(label)
+              node['data-tralics-id'] = node['id']
+              label.remove
+              clean_node node, %w{data-label}
             end
           end
         end
@@ -908,22 +938,39 @@ module Polytexnic
 
         # Creates linked cross-references.
         def make_cross_references(doc)
-          # build numbering tree
-          doc.xpath('//*[@data-tralics-id]').each do |node|
+          # build numbering tree (all data-tralics-id, exercises, and problems)
+          doc.xpath('//*[@data-tralics-id]|//div[@class="miniref-exercise"]|//div[@class="miniref-problem"]').each do |node|
             node['data-number'] = formatted_number(node)
             clean_node node, 'id-text'
             # Add number span
             if (head = node.css('h1 a, h2 a, h3 a').first)
-              el = doc.create_element 'span'
-              el.content = section_label(node)
-              el['class'] = 'number'
-              chapter_name = head.children.first
-              if chapter_name.nil?
-                head.add_child(el)
-              else
-                chapter_name.add_previous_sibling(el)
+              if !(node['class'].include?('-star'))
+                el = doc.create_element 'span'
+                el.content = section_label(node)
+                el['class'] = 'number'
+                chapter_name = head.children.first
+                if chapter_name.nil?
+                  head.add_child(el)
+                else
+                  chapter_name.add_previous_sibling(el)
+                end
               end
             end
+            # Handle problems and exercise
+            if node['class'] == 'miniref-exercise' or node['class'] == 'miniref-problem'
+              if (first_child = node.children.first)
+                el = doc.create_element 'span'
+                if node['class'] == 'miniref-exercise'
+                  el.content = exercise_label(node)
+                  el['class'] = 'exercise number'
+                elsif node['class'] == 'miniref-problem'
+                  el.content = problem_label(node)
+                  el['class'] = 'problem number'
+                end
+                first_child.add_previous_sibling(el)
+              end
+            end
+            #
           end
 
           targets = doc.xpath("//*[@data-tralics-id]")
@@ -953,6 +1000,15 @@ module Polytexnic
             else
               node['href'] = "##{node['target'].gsub(':', '-')}"
               node['class'] = 'hyperref'
+              # fixup ref content
+              node.xpath('.//span[@class="ref"]').each do |subnode|
+                target = target_cache[node['target']]
+                if target
+                  if target['class'] == 'miniref-exercise' or target['class'] == 'miniref-problem'
+                    subnode.content = target["data-number"]
+                  end
+                end
+              end
               clean_node node, 'target'
             end
           end
@@ -972,6 +1028,19 @@ module Polytexnic
           end
           label + ' '
         end
+
+        # Returns the exercise label
+        def exercise_label(node)
+          number = node['data-number']
+          'E' + number + ' '
+        end
+
+        # Returns the problem label
+        def problem_label(node)
+          number = node['data-number']
+          'P' + number + ' '
+        end
+
 
         # Returns true if the node represents a chapter.
         def chapter?(node)
@@ -999,6 +1068,8 @@ module Polytexnic
             @figure = 0
             @table = 0
             @aside = 0
+            @exercise = 0
+            @problem = 0
             @cha = article? ? nil : node['id-text']
           elsif node['class'] == 'section'
             @sec = node['id-text']
@@ -1024,7 +1095,18 @@ module Polytexnic
           elsif node.name == 'figure'
             @figure = ref_number(node, @cha, @figure)
             label_number(@cha, @figure)
+          elsif node['class'] == 'miniref-exercise'
+            @exercise = step_counter(node, @cha, @exercise)
+            label_number(@cha, @exercise)
+          elsif node['class'] == 'miniref-problem'
+            @problem = step_counter(node, @cha, @problem)
+            label_number(@cha, @problem)
           end
+        end
+
+        # Returns a exercise or problem number post increment
+        def step_counter(node, chapter, object)
+          object + 1
         end
 
         # Returns the reference number (i.e., the 'x' in '2.x').
