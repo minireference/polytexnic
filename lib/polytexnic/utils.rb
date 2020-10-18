@@ -137,6 +137,14 @@ module Polytexnic
 \newcommand{\includepdf}[1]{}
 \newcommand{\newunicodechar}[2]{}
 \newcommand{\extrafloats}[1]{}
+% MATH & PHYS
+\newcommand{\pgt}[2]{#1}
+% LOGICAL IMPLICATIONS (CH6 in LA BOOK)
+\newcommand{\fromto}[2]{\textbf{(#1)}$\Rightarrow$\textbf{(#2)}}
+\newcommand{\fromtofrom}[2]{\textbf{(#1)}$\Leftrightarrow$\textbf{(#2)}}
+\newcommand{\fromtofromtofrom}[3]{\textbf{(#1)}$\Leftrightarrow$\textbf{(#2)}$\Leftrightarrow$\textbf{(#3)}}
+% PROB
+\newcommand{\myepsdice}[1]{$\boxed{#1}$}
 % Minireference custom commands for exercises and problems (see 00.exercises_problems.hdr.tex).
 \newenvironment{problems}[1]{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-problems}}{\end{xmlelement}}
 \newenvironment{problem}{\begin{xmlelement}{div}\AddAttToCurrent{class}{miniref-problem}}{\end{xmlelement}}
