@@ -29,6 +29,7 @@ module Polytexnic
         chapters_and_sections(doc)
         subsection(doc)
         subsubsection(doc)
+        paragraphlevelheading(doc)
         headings(doc)
         sout(doc)
         coloredtext(doc)
@@ -655,7 +656,7 @@ module Polytexnic
         end
 
         # Processes the <head> tag given a section node.
-        # Supports chapter, section, and subsection.
+        # Supports chapter, section, subsection, subsubsection, and paragraphs.
         def make_headings(doc, node, name)
           head_node = node.children.first
           head_node.name = name
@@ -701,13 +702,23 @@ module Polytexnic
           end
         end
 
-        # Converts div2 to subsections.
+        # Converts div2 to subsubsections.
         def subsubsection(doc)
           doc.xpath('//div2').each do |node|
             node.name = 'div'
             node['class'] = 'subsubsection'
             clean_node node, %w{rend}
             make_headings(doc, node, 'h4')
+          end
+        end
+
+        # Converts div3 to paragrpahs.
+        def paragraphlevelheading(doc)
+          doc.xpath('//div3').each do |node|
+            node.name = 'div'
+            node['class'] = 'paragraph'
+            clean_node node, %w{rend}
+            make_headings(doc, node, 'h5')
           end
         end
 
