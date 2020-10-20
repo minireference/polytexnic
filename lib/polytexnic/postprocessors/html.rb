@@ -601,7 +601,7 @@ module Polytexnic
               node['id'] = pipeline_label(label)
               label.remove
             end
-            clean_node node, %w{data-label place width}
+            clean_node node, %w{data-label place}
           end
           doc.xpath('//table').each do |node|
             if unexpected = node.at_css('unexpected')
@@ -1191,7 +1191,22 @@ module Polytexnic
           if node['file'] && node['extension']
             filename = png_for_pdf(node['file'], node['extension'])
             alt = File.basename(node['file'])
-            img = %(<img src="#{filename}" alt="#{alt}" />)
+            style = ""
+            if node['height'] && node['width'].nil?
+              vertical_scaling_factor = 2  # empirically chosen
+              height_pt = node['height'].sub('pt', '').to_f
+              height_px = 1.33*height_pt*vertical_scaling_factor
+              height_px_str = height_px.to_i.to_s + 'px'
+              style += 'height:' + height_px_str + ';'
+            elsif node['width']
+              horizonatal_scaling_factor = 1.2  # empirically chosen
+              textwidth = 300  # in pt
+              width_pt = node['width'].sub('pt', '').to_f
+              width_percent = horizonatal_scaling_factor*(width_pt/textwidth)*100
+              width_percent = (width_percent > 100.0) ? 100 : width_percent
+              style += 'width:' + width_percent.to_s + '%;'
+            end
+            img = %(<img src="#{filename}" alt="#{alt}" style="#{style}" />)
             graphic = %(<span class="graphics">#{img}</span>)
             graphic_node = Nokogiri::HTML.fragment(graphic)
             if description_node = node.children.first
@@ -1199,7 +1214,7 @@ module Polytexnic
             else
               node.add_child(graphic_node)
             end
-            clean_node node, %w[file extension rend]
+            clean_node node, %w[file extension rend width height]
           end
           add_caption(node, name: 'figure') unless raw_graphic
         end

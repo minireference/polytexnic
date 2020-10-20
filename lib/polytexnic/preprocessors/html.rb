@@ -365,6 +365,7 @@ module Polytexnic
         def tralics_xml(polytex)
           file = Tempfile.new(['polytex', '.tex'])
           puts polytex if debug?
+          file.write('\setlength{\textwidth}{300pt}')  # book-sized page width
           file.write(polytex)
           file.close
           Dir.mkdir 'log' unless File.directory?('log')
