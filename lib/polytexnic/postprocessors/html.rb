@@ -1218,7 +1218,11 @@ module Polytexnic
               width_percent = (width_percent > 100.0) ? 100 : width_percent
               style += 'width:' + width_percent.to_s + '%;'
             end
-            img = %(<img src="#{filename}" alt="#{alt}" style="#{style}" />)
+            if style.empty?
+              img = %(<img src="#{filename}" alt="#{alt}" />)
+            else
+              img = %(<img src="#{filename}" alt="#{alt}" style="#{style}" />)
+            end
             graphic = %(<span class="graphics">#{img}</span>)
             graphic_node = Nokogiri::HTML.fragment(graphic)
             if description_node = node.children.first
