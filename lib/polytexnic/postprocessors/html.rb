@@ -959,6 +959,10 @@ module Polytexnic
           end
         end
 
+        def numbered_subsections?
+          false
+        end
+
         # Creates linked cross-references.
         def make_cross_references(doc)
           # build numbering tree (all data-tralics-id, exercises, and problems)
@@ -966,7 +970,8 @@ module Polytexnic
             node['data-number'] = formatted_number(node)
             clean_node node, 'id-text'
             # Add number span
-            if (head = node.css('h1 a, h2 a, h3 a').first)
+            selector = numbered_subsections? ? 'h1 a, h2 a, h3 a' : 'h1 a, h2 a'
+            if (head = node.css(selector).first)
               if !(node['class'].include?('-star'))
                 el = doc.create_element 'span'
                 el.content = section_label(node)
@@ -979,7 +984,7 @@ module Polytexnic
                 end
               end
             end
-            # Handle problems and exercise
+            # Handle miniref problems and exercise
             if node['class'] == 'miniref-exercise' or node['class'] == 'miniref-problem'
               if (first_child = node.children.first)
                 el = doc.create_element 'span'
@@ -1452,6 +1457,11 @@ module Polytexnic
           end
         end
 
+
+        def show_subsections_in_toc?
+          false
+        end
+
         # Handles table of contents (if present).
         # This code could no doubt be made much shorter, but probably at the
         # cost of clarity.
@@ -1506,7 +1516,7 @@ module Polytexnic
               end
               current_depth = 2
               insert_li(html, node)
-            when 'subsection'
+            when 'subsection' && show_subsections_in_toc?
               open_list(html) if current_depth == 2
               while current_depth > 3
                 close_list(html)
